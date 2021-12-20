@@ -1,0 +1,56 @@
+{
+  "metrics": [
+    {
+      "name": "collectd-cpu-load1",
+      "kafka-topic": "collectd-node-metrics",
+      "kafka-serialization": "JSON",
+      "elasticsearch-index": "node-cpu-load",
+      "schema": {
+        "timestamp": "",
+        "host": "",
+        "key": "",
+        "value": "",
+        "option": ""
+      }
+    },
+    {
+      "name": "collectd-cpu-load5",
+      "kafka-topic": "collectd-node-metrics",
+      "kafka-serialization": "JSON",
+      "elasticsearch-index": "node-cpu-load5",
+      "schema": {
+        "timestamp": "",
+        "host": "",
+        "key": "",
+        "value": "",
+        "option": ""
+      }
+    },
+    {
+      "name": "collectd-cpu-load15",
+      "kafka-topic": "collectd-node-metrics",
+      "kafka-serialization": "JSON",
+      "elasticsearch-index": "node-cpu-load15",
+      "schema": {
+        "timestamp": "",
+        "host": "",
+        "key": "",
+        "value": "",
+        "option": ""
+      }
+    },
+    {
+      "name": "collectd-cpu-usage",
+      "kafka-topic": "collectd-node-metrics",
+      "kafka-serialization": "JSON",
+      "elasticsearch-index": "node-cpu-usage",
+      "schema": {
+        "timestamp": "",
+        "host": "",
+        "key": "",
+        "value": "",
+        "option": ""
+      }
+    }
+  ]
+}

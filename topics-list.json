@@ -1,0 +1,84 @@
+{
+  "topics": [
+    {
+      "name": "telegraf_cpu",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_disk",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_diskio",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_docker",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kernel",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_node",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_pod_container",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_pod_network",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_pod_volume",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_system_container",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_mem",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_net",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_processes",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_swap",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_system",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_docker_container_blkio",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_docker_container_cpu",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_docker_container_mem",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_docker_container_status",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_docker_cpu",
+      "kafka-serialization": "JSON"
+    }
+  ]
+}

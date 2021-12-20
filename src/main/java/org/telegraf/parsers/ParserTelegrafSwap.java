@@ -51,9 +51,7 @@ public class ParserTelegrafSwap implements parsable {
             }
 
             store_record_es.store_record(ES_INDEX, jsonMap);
-
         } catch (Exception e) {
-            // Throwing an exception
             store_record_es.close_client();
             e.printStackTrace();
         }

@@ -8,7 +8,6 @@ import org.apache.logging.log4j.core.Logger;
 import org.telegraf.parsers.*;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -17,13 +16,12 @@ public class KafkaConsumerThread extends Thread {
     private final String KAFKA_BOOTSTRAP_SERVERS;
     private final String KAFKA_TOPIC;
     private final String ES_INDEX;
-    //private String  = "bitnami-kafka-0.bitnami-kafka-headless.monitoring.svc.cluster.local:9092";
 
     public KafkaConsumerThread(String kafka_brokers, String kafka_topic) {
         KAFKA_BOOTSTRAP_SERVERS = kafka_brokers;
         KAFKA_TOPIC = kafka_topic;
         ES_INDEX = KAFKA_TOPIC + "_index";
-        logger.error("Kafka Topic --> " + KAFKA_TOPIC);
+        logger.info("Kafka Topic --> " + KAFKA_TOPIC);
     }
 
     public parsable get_parser_class() {
@@ -95,7 +93,6 @@ public class KafkaConsumerThread extends Thread {
             while (ExecuteThread) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
-                    //logger.info("Key: " + record.key() + ", Value:" + record.value());
                     parser_class.parse_record(record);
                 }
             }

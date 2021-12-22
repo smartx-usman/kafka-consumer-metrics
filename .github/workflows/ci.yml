@@ -26,9 +26,6 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
-      - name: List files
-        run: ls -la
-
       - uses: mr-smithers-excellent/docker-build-push@v4
         name: Build & push Docker image
         with:

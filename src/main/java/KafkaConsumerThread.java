@@ -31,15 +31,12 @@ public class KafkaConsumerThread extends Thread {
             case "telegraf_diskio":
                 return new ParserTelegrafDiskio(this.ES_INDEX);
             case "telegraf_docker":
-                //logger.info("docker");
                 return new ParserTelegrafDocker(this.ES_INDEX);
             case "telegraf_kubernetes_pod_container":
                 return new ParserTelegrafK8SPodContainer(this.ES_INDEX);
             case "telegraf_kubernetes_pod_network":
-                //logger.warn("Kubernetes Pod Network Topic");
                 return new ParserTelegrafK8SPodNetwork(this.ES_INDEX);
             case "telegraf_kubernetes_pod_volume":
-                //logger.warn("Kubernetes Pod Volume Topic");
                 return new ParserTelegrafK8SPodVolume(this.ES_INDEX);
             case "telegraf_kubernetes_system_container":
                 return new ParserTelegrafK8SSystemContainer(this.ES_INDEX);
@@ -48,7 +45,6 @@ public class KafkaConsumerThread extends Thread {
             case "telegraf_net":
                 return new ParserTelegrafNet(this.ES_INDEX);
             case "telegraf_processes":
-                //logger.info("processes");
                 return new ParserTelegrafProcesses(this.ES_INDEX);
             case "telegraf_swap":
                 return new ParserTelegrafSwap(this.ES_INDEX);

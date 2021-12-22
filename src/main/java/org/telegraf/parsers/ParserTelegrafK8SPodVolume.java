@@ -37,7 +37,6 @@ public class ParserTelegrafK8SPodVolume implements parsable {
             String[] pod_name = measurement_plugin_labels[4].split("=");
             String[] volume_name = measurement_plugin_labels[5].split("=");
 
-            logger.error(volume_name);
             long timestamp_long = Long.parseLong(measurement_timestamp.trim());
             Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 

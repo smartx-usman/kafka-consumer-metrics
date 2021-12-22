@@ -22,7 +22,6 @@ public class ParserTelegrafK8SNode implements parsable {
 
     @Override
     public void parse_record(ConsumerRecord<String, String> record) {
-        //logger.info(record.value());
         try {
             String[] record_split = record.value().split(" ");
 

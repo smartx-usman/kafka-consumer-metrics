@@ -22,7 +22,6 @@ public class ParserTelegrafK8SPodContainer implements parsable {
 
     @Override
     public void parse_record(ConsumerRecord<String, String> record) {
-        logger.warn(record.value());
         try {
             String[] record_split = record.value().split(" ");
 

@@ -24,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B kafka-consumer-metrics-0.1.0-jar-with-dependencies.jar --file pom.xml
+        run: mvn -B package --file pom.xml
 
       - uses: mr-smithers-excellent/docker-build-push@v4
         name: Build & push Docker image

@@ -11,7 +11,6 @@ COPY target/kafka-consumer-metrics-0.1.0-jar-with-dependencies.jar $PATH_DIR
 
 WORKDIR $PATH_DIR
 
-ADD start.sh .
 ADD $TOPICS_LIST .
 
 RUN echo "#!/bin/bash" > ./entrypoint.sh

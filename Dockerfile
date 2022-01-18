@@ -14,4 +14,8 @@ WORKDIR $PATH_DIR
 ADD start.sh .
 ADD $TOPICS_LIST .
 
-ENTRYPOINT ./start.sh $JAR_FILE $KAFKA_BROKER $TOPICS_LIST
+RUN echo "#!/bin/bash" > ./entrypoint.sh
+RUN echo "java -jar ${JAR_FILE} ${KAFKA_BROKER} ${TOPICS_LIST}" >> ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]

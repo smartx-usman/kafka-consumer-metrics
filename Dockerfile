@@ -7,4 +7,4 @@ RUN mkdir $PATH_DIR
 COPY target/kafka-consumer-metrics-0.1.0-jar-with-dependencies.jar $PATH_DIR
 WORKDIR $PATH_DIR
 ADD $TOPICS_LIST .
-ENTRYPOINT ["java", "-jar", "$JAR_FILE", "$KAFKA_BROKER", "$TOPICS_LIST"]
+ENTRYPOINT java -jar $JAR_FILE $KAFKA_BROKER $TOPICS_LIST

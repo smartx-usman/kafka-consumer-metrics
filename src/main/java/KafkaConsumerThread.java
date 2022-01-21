@@ -28,6 +28,8 @@ public class KafkaConsumerThread extends Thread {
         switch (KAFKA_TOPIC) {
             case "telegraf_cpu":
                 return new ParserTelegrafCPU(this.ES_INDEX);
+            case "telegraf_disk":
+                return new ParserTelegrafDisk(this.ES_INDEX);
             case "telegraf_diskio":
                 return new ParserTelegrafDiskio(this.ES_INDEX);
             case "telegraf_docker":

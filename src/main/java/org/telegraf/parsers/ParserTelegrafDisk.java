@@ -22,7 +22,6 @@ public class ParserTelegrafDisk implements parsable {
 
     @Override
     public void parse_record(ConsumerRecord<String, String> record) {
-        logger.error(record.value());
         try {
             String[] record_split = record.value().split(" ");
 
@@ -33,30 +32,36 @@ public class ParserTelegrafDisk implements parsable {
             String[] measurement_plugin_labels = measurement_plugin.split(",");
             String[] measurement_value_labels = measurement_values.split(",");
 
-            String[] cpu_label = measurement_plugin_labels[1].split("=");
-            String[] host_label = measurement_plugin_labels[2].split("=");
+            String[] disk_label = measurement_plugin_labels[1].split("=");
+            String[] disk_fstype = measurement_plugin_labels[2].split("=");
+            String[] host_label = measurement_plugin_labels[3].split("=");
+            String[] disk_mode = measurement_plugin_labels[4].split("=");
+            String[] disk_path = measurement_plugin_labels[1].split("=");
 
             long timestamp_long = Long.parseLong(measurement_timestamp.trim());
             Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 
             Map<String, Object> jsonMap = new HashMap<>();
             jsonMap.put("@timestamp", instant);
-            jsonMap.put(cpu_label[0], cpu_label[1]);
+            jsonMap.put(disk_label[0], disk_label[1]);
             jsonMap.put(host_label[0], host_label[1]);
+            jsonMap.put(disk_fstype[0], disk_fstype[1]);
+            jsonMap.put(disk_mode[0], disk_mode[1]);
+            jsonMap.put(disk_path[0], disk_path[1]);
 
             String[] label_and_value;
             for (String measurement_value_label : measurement_value_labels) {
                 label_and_value = measurement_value_label.split("=");
-
+                if (label_and_value[1].charAt(label_and_value[1].length() - 1) == 'i') {
+                    label_and_value[1] = label_and_value[1].substring(0, label_and_value[1].length() - 1);
+                }
                 jsonMap.put(label_and_value[0], label_and_value[1]);
-                //logger.info(measurement_value_labels[i]);
             }
 
-            //store_record_es.store_record(ES_INDEX, jsonMap);
-
+            store_record_es.store_record(ES_INDEX, jsonMap);
         } catch (Exception e) {
-            // Throwing an exception
             store_record_es.close_client();
+            logger.error(e);
             e.printStackTrace();
         }
     }

@@ -1,4 +1,4 @@
-FROM openjdk:latest
+FROM openjdk:slim-buster
 
 ARG PATH_DIR="/consumers"
 ARG JAR_FILE="kafka-consumer-metrics-0.1.0-jar-with-dependencies.jar"

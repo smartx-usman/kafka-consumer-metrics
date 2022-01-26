@@ -8,7 +8,7 @@ import org.apache.logging.log4j.core.Logger;
 import org.telegraf.parsers.*;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.Collections;
 import java.util.Properties;
 
 public class KafkaConsumerThread extends Thread {
@@ -59,16 +59,7 @@ public class KafkaConsumerThread extends Thread {
         return null;
     }
 
-    public void run() {
-        boolean ExecuteThread = true;
-
-        //Ger parser class
-        parsable parser_class = get_parser_class();
-
-        if (parser_class == null) {
-            ExecuteThread = false;
-        }
-
+    public void create_kafka_consumer(Boolean ExecuteThread, parsable parser_class) {
         try {
             // Displaying the thread that is running
             logger.info("Thread " + Thread.currentThread().getId() + " is running");
@@ -85,7 +76,7 @@ public class KafkaConsumerThread extends Thread {
             KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
 
             //Subscribing
-            consumer.subscribe(List.of(this.KAFKA_TOPIC));
+            consumer.subscribe(Collections.singleton(this.KAFKA_TOPIC));
 
             //polling
             while (ExecuteThread) {
@@ -95,8 +86,24 @@ public class KafkaConsumerThread extends Thread {
                 }
             }
         } catch (Exception e) {
-            // Throwing an exception
-            e.printStackTrace();
+            logger.error("Kafka consumer error.", e);
+
+
         }
+    }
+
+    public void run() {
+        boolean ExecuteThread = true;
+
+        //Ger parser class
+        parsable parser_class = get_parser_class();
+
+        if (parser_class == null) {
+            ExecuteThread = false;
+        }
+
+        //this.create_kafka_consumer(ExecuteThread, parser_class);
+        this.create_kafka_consumer(ExecuteThread, parser_class);
+
     }
 }

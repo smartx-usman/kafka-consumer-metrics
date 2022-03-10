@@ -7,8 +7,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.telegraf.parsers.*;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Properties;
 
 public class KafkaConsumerThread extends Thread {
@@ -27,31 +29,31 @@ public class KafkaConsumerThread extends Thread {
     public parsable get_parser_class() {
         switch (KAFKA_TOPIC) {
             case "telegraf_cpu":
-                return new ParserTelegrafCPU(this.ES_INDEX);
+                return new ParserTelegrafCPU();
             case "telegraf_disk":
-                return new ParserTelegrafDisk(this.ES_INDEX);
+                return new ParserTelegrafDisk();
             case "telegraf_diskio":
-                return new ParserTelegrafDiskio(this.ES_INDEX);
+                return new ParserTelegrafDiskio();
             case "telegraf_docker":
-                return new ParserTelegrafDocker(this.ES_INDEX);
+                return new ParserTelegrafDocker();
             case "telegraf_kubernetes_pod_container":
-                return new ParserTelegrafK8SPodContainer(this.ES_INDEX);
+                return new ParserTelegrafK8SPodContainer();
             case "telegraf_kubernetes_pod_network":
-                return new ParserTelegrafK8SPodNetwork(this.ES_INDEX);
+                return new ParserTelegrafK8SPodNetwork();
             case "telegraf_kubernetes_pod_volume":
-                return new ParserTelegrafK8SPodVolume(this.ES_INDEX);
-            case "telegraf_kubernetes_system_container":
-                return new ParserTelegrafK8SSystemContainer(this.ES_INDEX);
+                return new ParserTelegrafK8SPodVolume();
+            //case "telegraf_kubernetes_system_container":
+            //    return new ParserTelegrafK8SSystemContainer();
             case "telegraf_mem":
-                return new ParserTelegrafMem(this.ES_INDEX);
+                return new ParserTelegrafMem();
             case "telegraf_net":
-                return new ParserTelegrafNet(this.ES_INDEX);
-            case "telegraf_processes":
-                return new ParserTelegrafProcesses(this.ES_INDEX);
+                return new ParserTelegrafNet();
+            //case "telegraf_processes":
+            //    return new ParserTelegrafProcesses();
             case "telegraf_swap":
-                return new ParserTelegrafSwap(this.ES_INDEX);
+                return new ParserTelegrafSwap();
             case "telegraf_system":
-                return new ParserTelegrafSystem(this.ES_INDEX);
+                return new ParserTelegrafSystem();
             default:
                 logger.info("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
                 break;
@@ -78,17 +80,73 @@ public class KafkaConsumerThread extends Thread {
             //Subscribing
             consumer.subscribe(Collections.singleton(this.KAFKA_TOPIC));
 
+            //Date formatting
+            String pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+
             //polling
             while (ExecuteThread) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+
                 for (ConsumerRecord<String, String> record : records) {
-                    parser_class.parse_record(record);
+                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(new Date()));
                 }
             }
         } catch (Exception e) {
             logger.error("Kafka consumer error.", e);
 
 
+        }
+    }
+
+    public void create_flink_kafka_consumer(Boolean ExecuteThread, parsable parser_class) {
+        try {
+            // Displaying the thread that is running
+            logger.info("Thread " + Thread.currentThread().getId() + " is running");
+
+            //StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+            //Creating consumer properties
+            /*Properties properties = new Properties();
+            properties.setProperty("bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS);
+            properties.setProperty("group.id", this.KAFKA_TOPIC + "-group");
+            properties.put("enable.auto.commit", "true");
+            properties.put("auto.commit.interval.ms", "1000");
+            properties.put("session.timeout.ms", "30000");
+            properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+            properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+            // 1.1 set kafka to source
+            env.enableCheckpointing(5000); // checkpoint every 5000 msecs
+
+            DataStream<String> stream = env
+                    .addSource(new FlinkKafkaConsumer<>(this.KAFKA_TOPIC, new SimpleStringSchema(), properties));*/
+
+
+            /*KafkaSource<String> source = KafkaSource.<String>builder()
+                    .setBootstrapServers(this.KAFKA_BOOTSTRAP_SERVERS)
+                    .setTopics(this.KAFKA_TOPIC)
+                    .setGroupId(this.KAFKA_TOPIC + "-group")
+                    .setStartingOffsets(OffsetsInitializer.earliest())
+                    .setValueOnlyDeserializer(new SimpleStringSchema())
+                    .build();
+
+
+            DataStream<String> stream = env
+                    .fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
+
+            System.out.println(stream.getId());
+
+            System.out.println(stream.print().setParallelism(1));
+
+            env.execute("Kafka Telegraf Metrics Consumer Job");*/
+            //stream.process();
+            //logger.warn(stream.print());
+
+        } catch (Exception e) {
+            // Throwing an exception
+            e.printStackTrace();
         }
     }
 

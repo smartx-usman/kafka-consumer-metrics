@@ -12,16 +12,14 @@ import java.util.Map;
 
 public class ParserTelegrafK8SNode implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafK8SNode.class);
-    private String ES_INDEX;
     private StoreRecordES store_record_es;
 
-    public ParserTelegrafK8SNode(String elasticsearch_index) {
-        ES_INDEX = elasticsearch_index;
+    public ParserTelegrafK8SNode(String elasticsearch_index, String es_index) {
         store_record_es = new StoreRecordES();
     }
 
     @Override
-    public void parse_record(ConsumerRecord<String, String> record) {
+    public void parse_record(ConsumerRecord<String, String> record, String es_index) {
         try {
             String[] record_split = record.value().split(" ");
 
@@ -49,7 +47,7 @@ public class ParserTelegrafK8SNode implements parsable {
                 jsonMap.put(label_and_value[0], label_and_value[1]);
             }
 
-            store_record_es.store_record(ES_INDEX, jsonMap);
+            store_record_es.store_record(es_index, jsonMap);
         } catch (Exception e) {
             store_record_es.close_client();
             e.printStackTrace();

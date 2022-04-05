@@ -32,7 +32,7 @@ public class StoreRecordES implements storable {
                 restClient, new JacksonJsonpMapper());
 
         // And create the API client
-        ElasticsearchClient client = new ElasticsearchClient(transport);
+        client = new ElasticsearchClient(transport);
     }
 
     public void close_client() {
@@ -48,6 +48,7 @@ public class StoreRecordES implements storable {
 
         try {
             boolean created = Boolean.TRUE.equals(client.indices().create(request).acknowledged());
+            System.out.println("Index is created");
         } catch (IOException e) {
             e.printStackTrace();
         }

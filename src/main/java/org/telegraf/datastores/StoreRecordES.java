@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.GetIndexRequest;
+import co.elastic.clients.elasticsearch.indices.GetIndexResponse;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
@@ -54,7 +55,11 @@ public class StoreRecordES implements storable {
         try {
             GetIndexRequest getIndex = GetIndexRequest.of(b -> b
                     .index(ES_Index));
-            System.out.println(client.indices().get(getIndex));
+
+
+
+            GetIndexResponse indexResponse = client.indices().get(getIndex);
+            System.out.println(indexResponse);
 
             boolean exists=false;
             if (exists)

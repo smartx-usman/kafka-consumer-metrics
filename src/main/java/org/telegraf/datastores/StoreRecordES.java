@@ -1,7 +1,8 @@
 package org.telegraf.datastores;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.ExistsRequest;
+//import co.elastic.clients.elasticsearch.core.ExistsRequest;
+import co.elastic.clients.elasticsearch.indices.ExistsRequest;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.GetIndexRequest;
@@ -67,7 +68,7 @@ public class StoreRecordES implements storable {
 
             ExistsRequest checkIndex = ExistsRequest.of(b -> b
                     .index(ES_Index));
-            BooleanResponse indexExists = client.indices().exists((Function<co.elastic.clients.elasticsearch.indices.ExistsRequest.Builder, ObjectBuilder<co.elastic.clients.elasticsearch.indices.ExistsRequest>>) checkIndex);
+            BooleanResponse indexExists = client.indices().exists(checkIndex);
 
             System.out.println(indexExists);
 

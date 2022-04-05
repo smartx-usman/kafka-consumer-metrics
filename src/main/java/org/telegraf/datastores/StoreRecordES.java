@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.ExistsRequest;
-import co.elastic.clients.elasticsearch.indices.GetIndexRequest;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
@@ -17,7 +16,6 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +44,7 @@ public class StoreRecordES implements storable {
 
     public void close_client() {
         //client. close();
-        System.out.println("Close connection.");
+        //System.out.println("Close connection.");
     }
 
     @SuppressWarnings({})
@@ -75,12 +73,10 @@ public class StoreRecordES implements storable {
             String jsonRecord = mapper.writeValueAsString(record);
 
             InputStream stream = new ByteArrayInputStream(jsonRecord.getBytes(StandardCharsets.UTF_8));
-            //FileReader file = new FileReader(jsonRecord);
 
             req = IndexRequest.of(b -> b
-                    .index(ES_Index)
-                    .withJson(stream)
-                    //.withJson(file)
+                            .index(ES_Index)
+                            .withJson(stream)
             );
 
             client.index(req);

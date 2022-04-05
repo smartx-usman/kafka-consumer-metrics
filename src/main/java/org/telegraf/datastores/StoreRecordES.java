@@ -14,8 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class StoreRecordES implements storable {
@@ -47,40 +50,31 @@ public class StoreRecordES implements storable {
     @SuppressWarnings({})
     @Override
     public void store_record(String ES_Index, Map<String, Object> record) {
-        CreateIndexRequest request = CreateIndexRequest.of(b -> b
-                .index(ES_Index));
-
         try {
-            GetIndexRequest getIndex = GetIndexRequest.of(b -> b
+            CreateIndexRequest request = CreateIndexRequest.of(b -> b
                     .index(ES_Index));
-
-
-            //GetIndexResponse indexResponse = client.indices().get(getIndex);
-
             ExistsRequest checkIndex = ExistsRequest.of(b -> b
                     .index(ES_Index));
             BooleanResponse indexExists = client.indices().exists(checkIndex);
 
-            System.out.println(indexExists.value());
-
             if (!indexExists.value()) {
                 boolean created = client.indices().create(request).acknowledged();
-                System.out.println("Index is created.");
+                System.out.println("Index " + ES_Index + " is created " + created + ".");
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
         try {
             String jsonRecord = new ObjectMapper().writeValueAsString(record);
 
-            FileReader file = new FileReader(jsonRecord);
+            InputStream stream = new ByteArrayInputStream(jsonRecord.getBytes(StandardCharsets.UTF_8));
+            //FileReader file = new FileReader(jsonRecord);
 
             req = IndexRequest.of(b -> b
                     .index(ES_Index)
-                    .withJson(file)
+                    .withJson(stream)
+                    //.withJson(file)
             );
 
             client.index(req);

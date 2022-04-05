@@ -7,11 +7,15 @@ import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
+import org.json.simple.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 public class StoreRecordES implements storable {
@@ -53,12 +57,17 @@ public class StoreRecordES implements storable {
             e.printStackTrace();
         }
 
-        req = IndexRequest.of(b -> b
-                .index(ES_Index)
-                .withJson((InputStream) record)
-        );
 
         try {
+            String jsonRecord = new ObjectMapper().writeValueAsString(record);
+
+            FileReader file = new FileReader(jsonRecord);
+
+            req = IndexRequest.of(b -> b
+                    .index(ES_Index)
+                    .withJson(file)
+            );
+
             client.index(req);
         } catch (IOException e) {
             e.printStackTrace();

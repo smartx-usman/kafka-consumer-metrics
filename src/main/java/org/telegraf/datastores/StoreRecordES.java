@@ -3,6 +3,7 @@ package org.telegraf.datastores;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
+import co.elastic.clients.elasticsearch.indices.GetIndexRequest;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
@@ -51,8 +52,17 @@ public class StoreRecordES implements storable {
                 .index(ES_Index));
 
         try {
-            boolean created = Boolean.TRUE.equals(client.indices().create(request).acknowledged());
-            System.out.println("Index is created");
+            GetIndexRequest getIndex = GetIndexRequest.of(b -> b
+                    .index(ES_Index));
+            System.out.println(client.indices().get(getIndex));
+
+            boolean exists=false;
+            if (exists)
+            {
+                boolean created = client.indices().create(request).acknowledged();
+                System.out.println("Index is created.");
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

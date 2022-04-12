@@ -77,6 +77,7 @@ public class ParserTelegrafSystem implements parsable {
                         counter.labels(labelValues.toArray(new String[0])).inc();
                     } finally {
                         pg.pushAdd(registry, jobName);
+                        registry.clear();
                     }
                 }
             }

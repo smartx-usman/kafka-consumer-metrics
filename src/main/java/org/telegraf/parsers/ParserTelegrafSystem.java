@@ -1,18 +1,28 @@
 package org.telegraf.parsers;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.exporter.PushGateway;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public class ParserTelegrafSystem implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafSystem.class);
-    private StoreRecordES store_record_es;
+
+    private final StoreRecordES store_record_es;
+
+    private CollectorRegistry registry = new CollectorRegistry();
+    private PushGateway pg = new PushGateway("http://prometheus-pushgateway.monitoring.svc.cluster.local:30004");
 
     public ParserTelegrafSystem() {
         store_record_es = new StoreRecordES();
@@ -41,6 +51,9 @@ public class ParserTelegrafSystem implements parsable {
                 long timestamp_long = Long.parseLong(measurement_timestamp.trim());
                 Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 
+                List<String> labelKeys = Arrays.asList(host_label[0]);
+                List<String> labelValues = Arrays.asList(host_label[1]);
+
                 jsonMap.put("@timestamp", instant);
                 jsonMap.put(host_label[0], host_label[1]);
                 for (String measurement_value_label : measurement_value_labels) {
@@ -49,6 +62,20 @@ public class ParserTelegrafSystem implements parsable {
                         label_and_value[1] = label_and_value[1].substring(0, label_and_value[1].length() - 1);
                     }
                     jsonMap.put(label_and_value[0], label_and_value[1]);
+
+                    String jobName = "telegrafJ";
+                    String metric = label_and_value[0];
+
+                    try {
+                        Gauge counter = Gauge.build()
+                                .name(metric)
+                                .labelNames(labelKeys.toArray(new String[0]))
+                                .register(registry);
+
+                        counter.labels(labelValues.toArray(new String[0])).inc();
+                    } finally {
+                        pg.pushAdd(registry, jobName);
+                    }
                 }
             }
 

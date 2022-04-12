@@ -65,10 +65,12 @@ public class ParserTelegrafSystem implements parsable {
 
                     String jobName = "telegrafJ";
                     String metric = label_and_value[0];
+                    String help = "host_system_load";
 
                     try {
                         Gauge counter = Gauge.build()
                                 .name(metric)
+                                .help(help)
                                 .labelNames(labelKeys.toArray(new String[0]))
                                 .register(registry);
 

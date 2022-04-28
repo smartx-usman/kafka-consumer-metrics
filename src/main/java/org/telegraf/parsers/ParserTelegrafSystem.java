@@ -10,10 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ParserTelegrafSystem implements parsable {
@@ -49,8 +46,8 @@ public class ParserTelegrafSystem implements parsable {
                 long timestamp_long = Long.parseLong(measurement_timestamp.trim());
                 Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 
-                List<String> labelKeys = Arrays.asList(host_label[0]);
-                List<String> labelValues = Arrays.asList(host_label[1]);
+                List<String> labelKeys = Collections.singletonList(host_label[0]);
+                List<String> labelValues = Collections.singletonList(host_label[1]);
 
                 jsonMap.put("@timestamp", instant);
                 jsonMap.put(host_label[0], host_label[1]);

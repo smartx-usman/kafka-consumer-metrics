@@ -1,7 +1,6 @@
 package org.telegraf.parsers;
 
 import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.PushGateway;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
@@ -9,11 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ParserLatencyTCP implements parsable {
@@ -32,15 +27,13 @@ public class ParserLatencyTCP implements parsable {
     public void parse_record(ConsumerRecord<String, String> record, String es_index) {
         try {
             String[] record_split = record.value().split(",");
-            logger.error(record.value());
+
             String[] measurement_timestamp = record_split[0].split(":");
             String[] host_ip = record_split[1].split(":");
             String[] host_name = record_split[2].split(":");
             String[] target_ip = record_split[3].split(":");
             String[] target_name = record_split[4].split(":");
             String[] latency = record_split[5].split(":");
-
-            logger.warn(host_ip[1]);
 
             Timestamp instant = new Timestamp(System.currentTimeMillis());
 
@@ -55,7 +48,7 @@ public class ParserLatencyTCP implements parsable {
             store_record_es.store_record(es_index, jsonMap);
 
             List<String> labelKeys = Arrays.asList(host_ip[0], host_name[0], target_ip[0], target_name[0]);
-            List<String> labelValues = Arrays.asList(latency[0]);
+            List<String> labelValues = Collections.singletonList(latency[0]);
 
             String jobName = "telegrafJ";
             String metric = "latency";

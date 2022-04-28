@@ -52,6 +52,8 @@ public class ParserLatencyTCP implements parsable {
             jsonMap.put(target_name[0], target_name[1]);
             jsonMap.put(latency[0], latency[1]);
 
+            store_record_es.store_record(es_index, jsonMap);
+
             List<String> labelKeys = Arrays.asList(host_ip[0], host_name[0], target_ip[0], target_name[0]);
             List<String> labelValues = Arrays.asList(latency[0]);
 
@@ -59,7 +61,7 @@ public class ParserLatencyTCP implements parsable {
             String metric = "latency";
             String help = "tcp-latency";
 
-            try {
+            /*try {
                 Gauge counter = Gauge.build()
                         .name(metric)
                         .help(help)
@@ -70,9 +72,7 @@ public class ParserLatencyTCP implements parsable {
             } finally {
                 pg.pushAdd(registry, jobName);
                 registry.clear();
-            }
-
-            store_record_es.store_record(es_index, jsonMap);
+            }*/
         } catch (Exception e) {
             store_record_es.close_client();
             e.printStackTrace();

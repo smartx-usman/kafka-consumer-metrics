@@ -31,7 +31,7 @@ public class ParserLatencyTCP implements parsable {
     public void parse_record(ConsumerRecord<String, String> record, String es_index) {
         try {
             String[] record_split = record.value().split(",");
-
+            logger.error(record.value());
             String[] measurement_timestamp = record_split[0].split(":");
             String[] host_ip = record_split[1].split(":");
             String[] host_name = record_split[2].split(":");

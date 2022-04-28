@@ -54,6 +54,8 @@ public class KafkaConsumerThread extends Thread {
                 return new ParserTelegrafSwap();
             case "telegraf_system":
                 return new ParserTelegrafSystem();
+            case "tcp-latency":
+                return new ParserLatencyTCP();
             default:
                 logger.info("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
                 break;

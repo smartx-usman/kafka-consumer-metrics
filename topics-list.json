@@ -79,6 +79,10 @@
     {
       "name": "telegraf_docker_cpu",
       "kafka-serialization": "JSON"
+    },
+    {
+      "name": "tcp-latency",
+      "kafka-serialization": "JSON"
     }
   ]
 }

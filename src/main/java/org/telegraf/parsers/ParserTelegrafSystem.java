@@ -42,8 +42,6 @@ public class ParserTelegrafSystem implements parsable {
 
             String[] measurement_value_labels = measurement_values.split(",");
 
-            logger.warn(host_label[1]);
-
             Map<String, Object> jsonMap = new HashMap<>();
 
             if ((measurement_value_labels[0].split("=")[0]).equals("n_users")) {

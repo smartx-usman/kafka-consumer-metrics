@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,8 +42,7 @@ public class ParserLatencyTCP implements parsable {
 
             logger.warn(host_ip[1]);
 
-            long timestamp_long = Long.parseLong(measurement_timestamp[1].trim());
-            Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
+            Timestamp instant = new Timestamp(System.currentTimeMillis());
 
             Map<String, Object> jsonMap = new HashMap<>();
             jsonMap.put("@timestamp", instant);

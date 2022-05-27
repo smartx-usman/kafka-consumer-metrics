@@ -32,7 +32,7 @@ public class StoreRecordES implements storable {
     public void set_client() {
         // Create the low-level client
         RestClient restClient = RestClient.builder(
-                new HttpHost("es-master-0.es-master-headless.monitoring.svc.cluster.local", 9200)).build();
+                new HttpHost("es-master-0.es-master-headless.observability.svc.cluster.local", 9200)).build();
 
         // Create the transport with a Jackson mapper
         ElasticsearchTransport transport = new RestClientTransport(

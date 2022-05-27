@@ -19,7 +19,7 @@ public class ParserTelegrafSystem implements parsable {
     private final StoreRecordES store_record_es;
 
     private CollectorRegistry registry = new CollectorRegistry();
-    private PushGateway pg = new PushGateway("prometheus-pushgateway.monitoring.svc.cluster.local:9091");
+    private PushGateway pg = new PushGateway("prometheus-pushgateway.observability.svc.cluster.local:9091");
 
     public ParserTelegrafSystem() {
         store_record_es = new StoreRecordES();

@@ -29,6 +29,8 @@ public class ParserTelegrafCPU implements parsable {
             String measurement_values = record_split[1];
             String measurement_timestamp = record_split[2];
 
+            logger.warn(measurement_plugin);
+
             String[] measurement_plugin_labels = measurement_plugin.split(",");
             String[] measurement_value_labels = measurement_values.split(",");
 

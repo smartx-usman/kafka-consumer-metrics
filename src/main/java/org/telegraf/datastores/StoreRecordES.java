@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.http.HttpHost;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 
 import java.io.ByteArrayInputStream;
@@ -22,17 +24,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class StoreRecordES implements storable {
+    private static final Logger logger = LogManager.getLogger(StoreRecordES.class);
     ElasticsearchClient client;
     IndexRequest<JsonData> req;
+    private String es_hostname = "";
+    private int es_port = 9200;
 
-    public StoreRecordES() {
+    public StoreRecordES(String host, int port) {
+        es_hostname = host;
+        es_port = port;
         this.set_client();
     }
 
     public void set_client() {
         // Create the low-level client
         RestClient restClient = RestClient.builder(
-                new HttpHost("es-master-0.es-master-headless.observability.svc.cluster.local", 9200)).build();
+                new HttpHost(es_hostname, es_port)).build();
 
         // Create the transport with a Jackson mapper
         ElasticsearchTransport transport = new RestClientTransport(
@@ -49,7 +56,7 @@ public class StoreRecordES implements storable {
 
     @SuppressWarnings({})
     @Override
-    public void store_record(String ES_Index, Map<String, Object> record) {
+    public void store_record(String ES_Index, Map<String, String> record) {
         try {
             CreateIndexRequest request = CreateIndexRequest.of(b -> b
                     .index(ES_Index));
@@ -59,7 +66,7 @@ public class StoreRecordES implements storable {
 
             if (!indexExists.value()) {
                 boolean created = client.indices().create(request).acknowledged();
-                System.out.println("Index " + ES_Index + " is created " + created + ".");
+                logger.info("Index " + ES_Index + " is created " + created + ".");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -75,13 +82,14 @@ public class StoreRecordES implements storable {
             InputStream stream = new ByteArrayInputStream(jsonRecord.getBytes(StandardCharsets.UTF_8));
 
             req = IndexRequest.of(b -> b
-                            .index(ES_Index)
-                            .withJson(stream)
+                    .index(ES_Index)
+                    .withJson(stream)
             );
 
             client.index(req);
-        } catch (IOException e) {
-            e.printStackTrace();
+            logger.info("Successfully record stored in ES.");
+        } catch (Exception e) {
+            logger.error("Elasticsearch data save failed.", e);
         }
     }
 }

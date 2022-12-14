@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
+import org.telegraf.datastores.StoreRecordES;
+import org.telegraf.datastores.StoreRecordPrometheus;
 import org.telegraf.parsers.*;
 
 import java.text.SimpleDateFormat;
@@ -17,11 +19,15 @@ public class KafkaConsumerThread extends Thread {
     private static final Logger logger = (Logger) LogManager.getLogger(KafkaConsumerThread.class);
     private final String KAFKA_BOOTSTRAP_SERVERS;
     private final String KAFKA_TOPIC;
+    private final StoreRecordPrometheus store_record_prometheus;
+    private final StoreRecordES store_record_es;
     private final String ES_INDEX;
 
-    public KafkaConsumerThread(String kafka_brokers, String kafka_topic) {
+    public KafkaConsumerThread(String kafka_brokers, String kafka_topic, StoreRecordES es, StoreRecordPrometheus prometheus) {
         KAFKA_BOOTSTRAP_SERVERS = kafka_brokers;
         KAFKA_TOPIC = kafka_topic;
+        store_record_prometheus = prometheus;
+        store_record_es = es;
         ES_INDEX = KAFKA_TOPIC + "_index";
         logger.info("Kafka Topic --> " + KAFKA_TOPIC);
     }
@@ -29,33 +35,33 @@ public class KafkaConsumerThread extends Thread {
     public parsable get_parser_class() {
         switch (KAFKA_TOPIC) {
             case "telegraf_cpu":
-                return new ParserTelegrafCPU();
+                return new ParserTelegrafCPU(store_record_es, store_record_prometheus);
             case "telegraf_disk":
-                return new ParserTelegrafDisk();
+                return new ParserTelegrafDisk(store_record_es, store_record_prometheus);
             case "telegraf_diskio":
-                return new ParserTelegrafDiskio();
+                return new ParserTelegrafDiskio(store_record_es, store_record_prometheus);
             case "telegraf_docker":
-                return new ParserTelegrafDocker();
+                return new ParserTelegrafDocker(store_record_es, store_record_prometheus);
             case "telegraf_kubernetes_pod_container":
-                return new ParserTelegrafK8SPodContainer();
+                return new ParserTelegrafK8SPodContainer(store_record_es, store_record_prometheus);
             case "telegraf_kubernetes_pod_network":
-                return new ParserTelegrafK8SPodNetwork();
+                return new ParserTelegrafK8SPodNetwork(store_record_es, store_record_prometheus);
             case "telegraf_kubernetes_pod_volume":
-                return new ParserTelegrafK8SPodVolume();
+                return new ParserTelegrafK8SPodVolume(store_record_es, store_record_prometheus);
             //case "telegraf_kubernetes_system_container":
             //    return new ParserTelegrafK8SSystemContainer();
             case "telegraf_mem":
-                return new ParserTelegrafMem();
+                return new ParserTelegrafMem(store_record_es, store_record_prometheus);
             case "telegraf_net":
-                return new ParserTelegrafNet();
+                return new ParserTelegrafNet(store_record_es, store_record_prometheus);
             //case "telegraf_processes":
-            //    return new ParserTelegrafProcesses();
+            //    return new ParserTelegrafProcesses(store_record_es, store_record_prometheus);
             case "telegraf_swap":
-                return new ParserTelegrafSwap();
+                return new ParserTelegrafSwap(store_record_es, store_record_prometheus);
             case "telegraf_system":
-                return new ParserTelegrafSystem();
+                return new ParserTelegrafSystem(store_record_es, store_record_prometheus);
             case "tcp-latency":
-                return new ParserLatencyTCP();
+                return new ParserLatencyTCP(store_record_es, store_record_prometheus);
             default:
                 logger.info("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
                 break;
@@ -85,7 +91,6 @@ public class KafkaConsumerThread extends Thread {
             //Date formatting
             String pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
 
             //polling
             while (ExecuteThread) {

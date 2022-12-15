@@ -6,6 +6,7 @@ import io.prometheus.client.exporter.PushGateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,16 @@ public class StoreRecordPrometheus implements storable {
     }
 
     public void store_record(String metric, Map<String, String> record, List<String> labelKeys, List<String> labelValues, String measurement) {
+        String jobName = "telegraf-metrics";
+        Map<String, String> grouping_key = new HashMap<String, String>();
+
+        grouping_key.put("job", jobName);
+        grouping_key.put("instance", "");
+
+        for (int i = 0; i < labelKeys.size(); i++) {
+            grouping_key.put(labelKeys.get(i), labelValues.get(i));
+        }
+
         try {
             Gauge gauge = Gauge.build()
                     .name(metric)
@@ -31,14 +42,11 @@ public class StoreRecordPrometheus implements storable {
                     .labelNames(labelKeys.toArray(new String[0]))
                     .register(registry);
 
-            //gauge.labels(labelValues.toArray(new String[0])).set(Double.parseDouble(label_and_value[1]));
-            //gauge.labels(labelValues.toArray(new String[0]));
             gauge.labels(labelValues.toArray(new String[0])).set(Double.parseDouble(measurement));
             //gauge.labels(metric).set(Double.parseDouble(measurement));
 
-            String jobName = "telegraf-metrics";
-            push_gateway.pushAdd(registry, jobName);
-            //push_gateway.pushAdd(registry, jobName, record);
+            push_gateway.pushAdd(registry, jobName, grouping_key);
+            //push_gateway.push(registry, jobName, grouping_key);
 
             logger.info("Successfully Pushed to push gateway.");
 

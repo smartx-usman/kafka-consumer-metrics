@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
+import org.telegraf.datastores.StoreRecordPrometheus;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -12,10 +13,12 @@ import java.util.Map;
 
 public class ParserTelegrafProcesses implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafProcesses.class);
-    private StoreRecordES store_record_es;
+    private final StoreRecordES store_record_es;
+    private final StoreRecordPrometheus store_record_prometheus;
 
-    public ParserTelegrafProcesses() {
-        store_record_es = new StoreRecordES();
+    public ParserTelegrafProcesses(StoreRecordES es, StoreRecordPrometheus prometheus) {
+        store_record_es = es;
+        store_record_prometheus = prometheus;
     }
 
     @Override
@@ -35,8 +38,8 @@ public class ParserTelegrafProcesses implements parsable {
             long timestamp_long = Long.parseLong(measurement_timestamp.trim());
             Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 
-            Map<String, Object> jsonMap = new HashMap<>();
-            jsonMap.put("@timestamp", instant);
+            Map<String, String> jsonMap = new HashMap<>();
+            jsonMap.put("@timestamp", instant.toString());
             //jsonMap.put(cpu_label[0], cpu_label[1]);
             jsonMap.put(host_label[0], host_label[1]);
 

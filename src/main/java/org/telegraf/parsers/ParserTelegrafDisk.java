@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
+import org.telegraf.datastores.StoreRecordPrometheus;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -12,10 +13,12 @@ import java.util.Map;
 
 public class ParserTelegrafDisk implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafDisk.class);
-    private StoreRecordES store_record_es;
+    private final StoreRecordES store_record_es;
+    private final StoreRecordPrometheus store_record_prometheus;
 
-    public ParserTelegrafDisk() {
-        store_record_es = new StoreRecordES();
+    public ParserTelegrafDisk(StoreRecordES es, StoreRecordPrometheus prometheus) {
+        store_record_es = es;
+        store_record_prometheus = prometheus;
     }
 
     @Override
@@ -39,8 +42,8 @@ public class ParserTelegrafDisk implements parsable {
             long timestamp_long = Long.parseLong(measurement_timestamp.trim());
             Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 
-            Map<String, Object> jsonMap = new HashMap<>();
-            jsonMap.put("@timestamp", instant);
+            Map<String, String> jsonMap = new HashMap<>();
+            jsonMap.put("@timestamp", instant.toString());
             jsonMap.put(disk_label[0], disk_label[1]);
             jsonMap.put(host_label[0], host_label[1]);
             jsonMap.put(disk_fstype[0], disk_fstype[1]);

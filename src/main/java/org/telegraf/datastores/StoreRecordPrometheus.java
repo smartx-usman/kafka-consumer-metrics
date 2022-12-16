@@ -24,12 +24,11 @@ public class StoreRecordPrometheus implements storable {
         //TODO: Add support for multiple metrics
     }
 
-    public void store_record(String metric, Map<String, String> record, List<String> labelKeys, List<String> labelValues, String measurement) {
-        String jobName = "telegraf-metrics";
+    public void store_record(String plugin, String metric, Map<String, String> record, List<String> labelKeys, List<String> labelValues, String measurement) {
+        String jobName = "telegraf-" + plugin + "-metrics";
         Map<String, String> grouping_key = new HashMap<String, String>();
-
         grouping_key.put("job", jobName);
-        grouping_key.put("instance", "");
+        grouping_key.put("instance", "aida");
 
         for (int i = 0; i < labelKeys.size(); i++) {
             grouping_key.put(labelKeys.get(i), labelValues.get(i));

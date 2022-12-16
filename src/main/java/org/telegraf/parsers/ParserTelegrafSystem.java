@@ -1,28 +1,27 @@
 package org.telegraf.parsers;
 
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
+import org.telegraf.datastores.StoreRecordPrometheus;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class ParserTelegrafSystem implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafSystem.class);
 
     private final StoreRecordES store_record_es;
+    private final StoreRecordPrometheus store_record_prometheus;
 
-    private CollectorRegistry registry = new CollectorRegistry();
-    private PushGateway pg = new PushGateway("prometheus-pushgateway.observability.svc.cluster.local:9091");
-
-    public ParserTelegrafSystem() {
-        store_record_es = new StoreRecordES();
+    public ParserTelegrafSystem(StoreRecordES es, StoreRecordPrometheus prometheus) {
+        store_record_es = es;
+        store_record_prometheus = prometheus;
     }
 
     @Override
@@ -34,22 +33,25 @@ public class ParserTelegrafSystem implements parsable {
             String measurement_values = record_split[1];
             String measurement_timestamp = record_split[2];
 
+            logger.warn("measurement_plugin: " + measurement_plugin);
+
             String[] measurement_plugin_labels = measurement_plugin.split(",");
             String[] host_label = measurement_plugin_labels[1].split("=");
 
             String[] measurement_value_labels = measurement_values.split(",");
 
-            Map<String, Object> jsonMap = new HashMap<>();
+            Map<String, String> jsonMap = new HashMap<String, String>();
 
-            if ((measurement_value_labels[0].split("=")[0]).equals("n_users")) {
+            List<String> labelKeys = Collections.singletonList(host_label[0]);
+            List<String> labelValues = Collections.singletonList(host_label[1]);
+
+            logger.warn(measurement_value_labels[0].split("=")[0]);
+            if (measurement_value_labels[0].contains("load")) {
                 String[] label_and_value;
                 long timestamp_long = Long.parseLong(measurement_timestamp.trim());
                 Instant instant = Instant.ofEpochMilli(timestamp_long / 1000000);
 
-                List<String> labelKeys = Collections.singletonList(host_label[0]);
-                List<String> labelValues = Collections.singletonList(host_label[1]);
-
-                jsonMap.put("@timestamp", instant);
+                jsonMap.put("@timestamp", instant.toString());
                 jsonMap.put(host_label[0], host_label[1]);
                 for (String measurement_value_label : measurement_value_labels) {
                     label_and_value = measurement_value_label.split("=");
@@ -58,29 +60,13 @@ public class ParserTelegrafSystem implements parsable {
                     }
                     jsonMap.put(label_and_value[0], label_and_value[1]);
 
-                    String jobName = "telegrafJ";
-                    String metric = label_and_value[0];
-                    String help = "host_system_load";
-
-                    try {
-                        Gauge counter = Gauge.build()
-                                .name(metric)
-                                .help(help)
-                                .labelNames(labelKeys.toArray(new String[0]))
-                                .register(registry);
-
-                        counter.labels(labelValues.toArray(new String[0])).inc();
-                    } finally {
-                        pg.pushAdd(registry, jobName);
-                        registry.clear();
-                    }
+                    store_record_prometheus.store_record(measurement_plugin_labels[0], label_and_value[0], jsonMap, labelKeys, labelValues, label_and_value[1]);
                 }
             }
-
             store_record_es.store_record(es_index, jsonMap);
         } catch (Exception e) {
             store_record_es.close_client();
-            e.printStackTrace();
+            logger.error("Error in parsing record.", e);
         }
     }
 }

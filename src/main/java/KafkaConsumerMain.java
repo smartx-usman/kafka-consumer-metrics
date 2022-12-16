@@ -17,11 +17,11 @@ public class KafkaConsumerMain {
     private static StoreRecordPrometheus store_record_prometheus = null;
 
     public static void main(String[] args) {
-        KafkaConsumerMain.LoadConfig(args[0], args[1], args[2], args[3], args[4]);
+        KafkaConsumerMain.LoadConfig(args[0], args[1], args[2], args[3], args[4], args[5]);
     }
 
-    public static void LoadConfig(String kafka_bootstrap_servers, String configFile, String es_host, String es_port, String prometheus_pushgateway) {
-        store_record_es = new StoreRecordES(es_host, Integer.parseInt(es_port));
+    public static void LoadConfig(String kafka_bootstrap_servers, String configFile, String es_host, String es_port, String retention_days, String prometheus_pushgateway) {
+        store_record_es = new StoreRecordES(es_host, Integer.parseInt(es_port), retention_days);
         store_record_prometheus = new StoreRecordPrometheus(prometheus_pushgateway);
 
         //JSON parser object to parse read file

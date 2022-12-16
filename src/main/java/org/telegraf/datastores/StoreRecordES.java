@@ -13,13 +13,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -29,10 +32,12 @@ public class StoreRecordES implements storable {
     IndexRequest<JsonData> req;
     private String es_hostname = "";
     private int es_port = 9200;
+    private String es_index_retention_days = "3d";
 
-    public StoreRecordES(String host, int port) {
+    public StoreRecordES(String host, int port, String retention_days) {
         es_hostname = host;
         es_port = port;
+        es_index_retention_days = retention_days;
         this.set_client();
     }
 
@@ -47,6 +52,60 @@ public class StoreRecordES implements storable {
 
         // And create the API client
         client = new ElasticsearchClient(transport);
+
+        // Create the policy for index retention
+        //curl -X GET "es-master-headless.observability.svc.cluster.local:9200/_ilm/policy/obs_metrics_policy?pretty"
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPut httpPut = new HttpPut("http://" + es_hostname + ":" + es_port + "/_ilm/policy/obs_metrics_policy?pretty");
+
+        String policyJson = "{" +
+                "\"policy\": {" +
+                "\"_meta\": {" +
+                "   \"description\": \"used for observability metrics\"," +
+                "            \"project\": {" +
+                "        \"name\": \"Kafka consumer\"," +
+                "                \"department\": \"AIDA\"" +
+                "    }" +
+                "}," +
+                "\"phases\": { " +
+                "    \"warm\": { " +
+                "        \"min_age\": \"1d\", " +
+                "                \"actions\": { " +
+                "            \"forcemerge\": { " +
+                "                \"max_num_segments\": 1 " +
+                "            }" +
+                "        }" +
+                "    }," +
+                "    \"delete\": { " +
+                "        \"min_age\": \""+es_index_retention_days+"\",  " +
+                "                \"actions\": { " +
+                "            \"delete\": {} " +
+                "        }" +
+                "    }" +
+                "} " +
+                "}" +
+                "}";
+
+        httpPut.setHeader("Content-Type", "application/json");
+
+        try {
+            StringEntity entity = new StringEntity(policyJson);
+            httpPut.setEntity(entity);
+
+            try {
+                HttpResponse response = httpClient.execute(httpPut);
+
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    logger.error("Failed to create policy: " + response.getStatusLine().getStatusCode());
+                } else if (response.getStatusLine().getStatusCode() == 200) {
+                    logger.info("Successfully created policy");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Error creating policy entity for index retention: " + e.getMessage());
+        }
     }
 
     public void close_client() {
@@ -58,13 +117,20 @@ public class StoreRecordES implements storable {
     @Override
     public void store_record(String ES_Index, Map<String, String> record) {
         try {
-            CreateIndexRequest request = CreateIndexRequest.of(b -> b
-                    .index(ES_Index));
             ExistsRequest checkIndex = ExistsRequest.of(b -> b
                     .index(ES_Index));
             BooleanResponse indexExists = client.indices().exists(checkIndex);
 
             if (!indexExists.value()) {
+                Reader settingJson = new StringReader(
+                        "{" +
+                                "     \"settings\":{" +
+                                "         \"index.lifecycle.name\":\"obs_metrics_policy\" " +
+                                "     }" +
+                                "}");
+                CreateIndexRequest request = CreateIndexRequest.of(b -> b
+                        .index(ES_Index).withJson(settingJson));
+
                 boolean created = client.indices().create(request).acknowledged();
                 logger.info("Index " + ES_Index + " is created " + created + ".");
             }

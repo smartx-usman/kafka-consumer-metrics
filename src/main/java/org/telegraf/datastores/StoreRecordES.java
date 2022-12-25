@@ -68,11 +68,11 @@ public class StoreRecordES implements storable {
                 "    }" +
                 "}," +
                 "\"phases\": { " +
-                "    \"warm\": { " +
-                "        \"min_age\": \"1d\", " +
+                "    \"hot\": { " +
+                "        \"min_age\": \"0ms\", " +
                 "                \"actions\": { " +
-                "            \"forcemerge\": { " +
-                "                \"max_num_segments\": 1 " +
+                "            \"set_priority\": { " +
+                "                \"priority\": 100 " +
                 "            }" +
                 "        }" +
                 "    }," +
@@ -125,7 +125,11 @@ public class StoreRecordES implements storable {
                 Reader settingJson = new StringReader(
                         "{" +
                                 "     \"settings\":{" +
-                                "         \"index.lifecycle.name\":\"obs_metrics_policy\" " +
+                                "         \"index.lifecycle.name\": \"obs_metrics_policy\" " +
+                                "     }," +
+                                "     \"mappings\":{" +
+                                "         \"numeric_detection\": \"true\" " +
+                                "         \"date_detection\": \"true\" " +
                                 "     }" +
                                 "}");
                 CreateIndexRequest request = CreateIndexRequest.of(b -> b

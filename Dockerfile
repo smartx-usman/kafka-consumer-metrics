@@ -5,7 +5,7 @@ ARG JAR_FILE="kafka-consumer-metrics-0.1.0-jar-with-dependencies.jar"
 ARG KAFKA_BROKER="bitnami-kafka-0.bitnami-kafka-headless.observability.svc.cluster.local:9092"
 ARG ES_HOSTNAME="es-master-headless.observability.svc.cluster.local"
 ARG ES_PORT=9200
-ARG ES_INDEX_RETENTION_DAYS="3d"
+ARG ES_INDEX_RETENTION_DAYS="2d"
 ARG PROMETHEUS_PUSHGATEWAY="prometheus-prometheus-pushgateway.observability.svc.cluster.local:9091"
 
 

@@ -128,7 +128,7 @@ public class StoreRecordES implements storable {
                                 "         \"index.lifecycle.name\": \"obs_metrics_policy\" " +
                                 "     }," +
                                 "     \"mappings\":{" +
-                                "         \"numeric_detection\": \"true\" " +
+                                "         \"numeric_detection\": \"true\", " +
                                 "         \"date_detection\": \"true\" " +
                                 "     }" +
                                 "}");

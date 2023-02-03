@@ -83,6 +83,14 @@
     {
       "name": "tcp-latency",
       "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_temp",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_powerstat_package",
+      "kafka-serialization": "JSON"
     }
   ]
 }

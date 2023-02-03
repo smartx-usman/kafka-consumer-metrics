@@ -60,6 +60,10 @@ public class KafkaConsumerThread extends Thread {
                 return new ParserTelegrafSwap(store_record_es, store_record_prometheus);
             case "telegraf_system":
                 return new ParserTelegrafSystem(store_record_es, store_record_prometheus);
+            case "telegraf_temp":
+                return new ParserTelegrafTemp(store_record_es, store_record_prometheus);
+            case "telegraf_powerstat_package":
+                return new ParserTelegrafPower(store_record_es, store_record_prometheus);
             case "tcp-latency":
                 return new ParserLatencyTCP(store_record_es, store_record_prometheus);
             default:
@@ -102,73 +106,20 @@ public class KafkaConsumerThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Kafka consumer error.", e);
-
-
         }
     }
 
-    public void create_flink_kafka_consumer(Boolean ExecuteThread, parsable parser_class) {
-        try {
-            // Displaying the thread that is running
-            logger.info("Thread " + Thread.currentThread().getId() + " is running");
-
-            //StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-            //Creating consumer properties
-            /*Properties properties = new Properties();
-            properties.setProperty("bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS);
-            properties.setProperty("group.id", this.KAFKA_TOPIC + "-group");
-            properties.put("enable.auto.commit", "true");
-            properties.put("auto.commit.interval.ms", "1000");
-            properties.put("session.timeout.ms", "30000");
-            properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-            properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-
-            // 1.1 set kafka to source
-            env.enableCheckpointing(5000); // checkpoint every 5000 msecs
-
-            DataStream<String> stream = env
-                    .addSource(new FlinkKafkaConsumer<>(this.KAFKA_TOPIC, new SimpleStringSchema(), properties));*/
-
-
-            /*KafkaSource<String> source = KafkaSource.<String>builder()
-                    .setBootstrapServers(this.KAFKA_BOOTSTRAP_SERVERS)
-                    .setTopics(this.KAFKA_TOPIC)
-                    .setGroupId(this.KAFKA_TOPIC + "-group")
-                    .setStartingOffsets(OffsetsInitializer.earliest())
-                    .setValueOnlyDeserializer(new SimpleStringSchema())
-                    .build();
-
-
-            DataStream<String> stream = env
-                    .fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
-
-            System.out.println(stream.getId());
-
-            System.out.println(stream.print().setParallelism(1));
-
-            env.execute("Kafka Telegraf Metrics Consumer Job");*/
-            //stream.process();
-            //logger.warn(stream.print());
-
-        } catch (Exception e) {
-            // Throwing an exception
-            e.printStackTrace();
-        }
-    }
 
     public void run() {
         boolean ExecuteThread = true;
 
-        //Ger parser class
+        //Get parser classes
         parsable parser_class = get_parser_class();
 
         if (parser_class == null) {
             ExecuteThread = false;
         }
 
-        //this.create_kafka_consumer(ExecuteThread, parser_class);
         this.create_kafka_consumer(ExecuteThread, parser_class);
-
     }
 }

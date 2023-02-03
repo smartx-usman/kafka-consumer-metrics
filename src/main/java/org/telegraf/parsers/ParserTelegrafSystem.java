@@ -24,7 +24,7 @@ public class ParserTelegrafSystem implements parsable {
 
     private final StoreRecordES store_record_es;
     private final StoreRecordPrometheus store_record_prometheus;
-    private final File file = new File("/metrics/system_load.csv");
+    private final File file = new File("/metrics/system_load.json");
     private final ObjectMapper mapper = new ObjectMapper();
     private FileWriter file_writer = null;
     private SequenceWriter sequence_writer = null;
@@ -33,7 +33,7 @@ public class ParserTelegrafSystem implements parsable {
         store_record_es = es;
         store_record_prometheus = prometheus;
         try {
-            boolean result = Files.deleteIfExists(file.toPath());
+            Files.deleteIfExists(file.toPath());
             file_writer = new FileWriter(file, true);
             sequence_writer = mapper.writer().writeValuesAsArray(file_writer);
         } catch (IOException e) {

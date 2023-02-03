@@ -22,7 +22,7 @@ public class ParserTelegrafDiskio implements parsable {
 
     private final StoreRecordES store_record_es;
     private final StoreRecordPrometheus store_record_prometheus;
-    private final File file = new File("/metrics/disk_io.csv");
+    private final File file = new File("/metrics/disk_io.json");
     private final ObjectMapper mapper = new ObjectMapper();
     private SequenceWriter sequence_writer = null;
     private FileWriter file_writer = null;
@@ -31,7 +31,7 @@ public class ParserTelegrafDiskio implements parsable {
         store_record_es = es;
         store_record_prometheus = prometheus;
         try {
-            boolean result = Files.deleteIfExists(file.toPath());
+            Files.deleteIfExists(file.toPath());
             file_writer = new FileWriter(file, true);
             sequence_writer = mapper.writer().writeValuesAsArray(file_writer);
         } catch (IOException e) {

@@ -24,7 +24,7 @@ public class ParserTelegrafCPU implements parsable {
 
     private final StoreRecordES store_record_es;
     private final StoreRecordPrometheus store_record_prometheus;
-    private final File file = new File("/metrics/cpu_usage.csv");
+    private final File file = new File("/metrics/cpu_usage.json");
     private final ObjectMapper mapper = new ObjectMapper();
     private FileWriter file_writer = null;
     private SequenceWriter sequence_writer = null;
@@ -33,7 +33,7 @@ public class ParserTelegrafCPU implements parsable {
         store_record_es = es;
         store_record_prometheus = prometheus;
         try {
-            boolean result = Files.deleteIfExists(file.toPath());
+            Files.deleteIfExists(file.toPath());
             file_writer = new FileWriter(file, true);
             sequence_writer = mapper.writer().writeValuesAsArray(file_writer);
         } catch (IOException e) {
@@ -49,8 +49,6 @@ public class ParserTelegrafCPU implements parsable {
             String measurement_plugin = record_split[0];
             String measurement_values = record_split[1];
             String measurement_timestamp = record_split[2];
-
-            //logger.warn("measurement_plugin: " + measurement_plugin);
 
             String[] measurement_plugin_labels = measurement_plugin.split(",");
             String[] measurement_value_labels = measurement_values.split(",");

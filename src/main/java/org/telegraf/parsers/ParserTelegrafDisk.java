@@ -1,11 +1,17 @@
 package org.telegraf.parsers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.StoreRecordES;
 import org.telegraf.datastores.StoreRecordPrometheus;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,12 +19,24 @@ import java.util.Map;
 
 public class ParserTelegrafDisk implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafDisk.class);
+
     private final StoreRecordES store_record_es;
     private final StoreRecordPrometheus store_record_prometheus;
+    private final File file = new File("/metrics/disk_usage.csv");
+    private final ObjectMapper mapper = new ObjectMapper();
+    private SequenceWriter sequence_writer = null;
+    private FileWriter file_writer = null;
 
     public ParserTelegrafDisk(StoreRecordES es, StoreRecordPrometheus prometheus) {
         store_record_es = es;
         store_record_prometheus = prometheus;
+        try {
+            boolean result = Files.deleteIfExists(file.toPath());
+            file_writer = new FileWriter(file, true);
+            sequence_writer = mapper.writer().writeValuesAsArray(file_writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -59,11 +77,22 @@ public class ParserTelegrafDisk implements parsable {
                 jsonMap.put(label_and_value[0], label_and_value[1]);
             }
 
+            sequence_writer.write(jsonMap);
             store_record_es.store_record(es_index, jsonMap);
         } catch (Exception e) {
             store_record_es.close_client();
             logger.error(e);
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void finalize() {
+        try {
+            file_writer.close();
+            sequence_writer.close();
+        } catch (IOException e) {
+            logger.error("Error in closing file writer.", e);
         }
     }
 }

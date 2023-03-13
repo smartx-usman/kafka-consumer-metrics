@@ -21,6 +21,22 @@
       "kafka-serialization": "JSON"
     },
     {
+      "name": "telegraf_kubernetes_daemonset",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_deployment",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_service",
+      "kafka-serialization": "JSON"
+    },
+    {
+      "name": "telegraf_kubernetes_statefulset",
+      "kafka-serialization": "JSON"
+    },
+    {
       "name": "telegraf_kubernetes_node",
       "kafka-serialization": "JSON"
     },

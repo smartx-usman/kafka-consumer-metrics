@@ -42,6 +42,14 @@ public class KafkaConsumerThread extends Thread {
                 return new ParserTelegrafDiskio(store_record_es, store_record_prometheus);
             case "telegraf_docker":
                 return new ParserTelegrafDocker(store_record_es, store_record_prometheus);
+            case "telegraf_kubernetes_daemonset":
+                return new ParserTelegrafK8SDaemonset(store_record_es, store_record_prometheus);
+            case "telegraf_kubernetes_deployment":
+                return new ParserTelegrafK8SDeployment(store_record_es, store_record_prometheus);
+            case "telegraf_kubernetes_service":
+                return new ParserTelegrafK8SService(store_record_es, store_record_prometheus);
+            case "telegraf_kubernetes_statefulset":
+                return new ParserTelegrafK8SStatefulset(store_record_es, store_record_prometheus);
             case "telegraf_kubernetes_pod_container":
                 return new ParserTelegrafK8SPodContainer(store_record_es, store_record_prometheus);
             case "telegraf_kubernetes_pod_network":

@@ -3,8 +3,8 @@ package org.telegraf.parsers;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.telegraf.datastores.StoreRecordES;
-import org.telegraf.datastores.StoreRecordPrometheus;
+import org.telegraf.datastores.Storable;
+import org.telegraf.datastores.StoreRecordFile;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -13,12 +13,12 @@ import java.util.Map;
 
 public class ParserTelegrafK8SNode implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafK8SNode.class);
-    private final StoreRecordES store_record_es;
-    private final StoreRecordPrometheus store_record_prometheus;
+    private final Storable data_store_class;
+    private final StoreRecordFile store_record_file;
 
-    public ParserTelegrafK8SNode(StoreRecordES es, StoreRecordPrometheus prometheus) {
-        store_record_es = es;
-        store_record_prometheus = prometheus;
+    public ParserTelegrafK8SNode(Storable data_store) {
+        data_store_class = data_store;
+        store_record_file = new StoreRecordFile("kubernetes_node");
     }
 
     @Override
@@ -50,9 +50,9 @@ public class ParserTelegrafK8SNode implements parsable {
                 jsonMap.put(label_and_value[0], label_and_value[1]);
             }
 
-            store_record_es.store_record(es_index, jsonMap);
+            store_record_file.store_record(measurement_plugin_labels[0], null, jsonMap, null, null, null);
+            data_store_class.store_record(es_index, null, jsonMap, null, null, null);
         } catch (Exception e) {
-            store_record_es.close_client();
             e.printStackTrace();
         }
     }

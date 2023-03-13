@@ -1,17 +1,11 @@
 package org.telegraf.parsers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SequenceWriter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.telegraf.datastores.StoreRecordES;
-import org.telegraf.datastores.StoreRecordPrometheus;
+import org.telegraf.datastores.Storable;
+import org.telegraf.datastores.StoreRecordFile;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,23 +14,12 @@ import java.util.Map;
 public class ParserTelegrafK8SPodNetwork implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafK8SPodNetwork.class);
 
-    private final StoreRecordES store_record_es;
-    private final StoreRecordPrometheus store_record_prometheus;
-    private final File file = new File("/metrics/kubernetes_pod_network.json");
-    private final ObjectMapper mapper = new ObjectMapper();
-    private FileWriter file_writer = null;
-    private SequenceWriter sequence_writer = null;
+    private final Storable data_store_class;
+    private final StoreRecordFile store_record_file;
 
-    public ParserTelegrafK8SPodNetwork(StoreRecordES es, StoreRecordPrometheus prometheus) {
-        store_record_es = es;
-        store_record_prometheus = prometheus;
-        try {
-            Files.deleteIfExists(file.toPath());
-            file_writer = new FileWriter(file, true);
-            sequence_writer = mapper.writer().writeValuesAsArray(file_writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public ParserTelegrafK8SPodNetwork(Storable data_store) {
+        data_store_class = data_store;
+        store_record_file = new StoreRecordFile("kubernetes_pod_network");
     }
 
     @Override
@@ -74,21 +57,10 @@ public class ParserTelegrafK8SPodNetwork implements parsable {
                 jsonMap.put(label_and_value[0], label_and_value[1]);
             }
 
-            sequence_writer.write(jsonMap);
-            store_record_es.store_record(es_index, jsonMap);
+            store_record_file.store_record(measurement_plugin_labels[0], null, jsonMap, null, null, null);
+            data_store_class.store_record(es_index, null, jsonMap, null, null, null);
         } catch (Exception e) {
-            store_record_es.close_client();
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void finalize() {
-        try {
-            file_writer.close();
-            sequence_writer.close();
-        } catch (IOException e) {
-            logger.error("Error in closing file writer.", e);
         }
     }
 }

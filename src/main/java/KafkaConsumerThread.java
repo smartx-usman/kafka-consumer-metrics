@@ -5,8 +5,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
-import org.telegraf.datastores.StoreRecordES;
-import org.telegraf.datastores.StoreRecordPrometheus;
+import org.telegraf.datastores.Storable;
 import org.telegraf.parsers.*;
 
 import java.text.SimpleDateFormat;
@@ -19,15 +18,13 @@ public class KafkaConsumerThread extends Thread {
     private static final Logger logger = (Logger) LogManager.getLogger(KafkaConsumerThread.class);
     private final String KAFKA_BOOTSTRAP_SERVERS;
     private final String KAFKA_TOPIC;
-    private final StoreRecordPrometheus store_record_prometheus;
-    private final StoreRecordES store_record_es;
+    private final Storable data_store_class;
     private final String ES_INDEX;
 
-    public KafkaConsumerThread(String kafka_brokers, String kafka_topic, StoreRecordES es, StoreRecordPrometheus prometheus) {
+    public KafkaConsumerThread(String kafka_brokers, String kafka_topic, Storable data_store) {
         KAFKA_BOOTSTRAP_SERVERS = kafka_brokers;
         KAFKA_TOPIC = kafka_topic;
-        store_record_prometheus = prometheus;
-        store_record_es = es;
+        data_store_class = data_store;
         ES_INDEX = KAFKA_TOPIC + "_index";
         logger.info("Kafka Topic --> " + KAFKA_TOPIC);
     }
@@ -35,45 +32,45 @@ public class KafkaConsumerThread extends Thread {
     public parsable get_parser_class() {
         switch (KAFKA_TOPIC) {
             case "telegraf_cpu":
-                return new ParserTelegrafCPU(store_record_es, store_record_prometheus);
+                return new ParserTelegrafCPU(data_store_class);
             case "telegraf_disk":
-                return new ParserTelegrafDisk(store_record_es, store_record_prometheus);
+                return new ParserTelegrafDisk(data_store_class);
             case "telegraf_diskio":
-                return new ParserTelegrafDiskio(store_record_es, store_record_prometheus);
+                return new ParserTelegrafDiskio(data_store_class);
             case "telegraf_docker":
-                return new ParserTelegrafDocker(store_record_es, store_record_prometheus);
+                return new ParserTelegrafDocker(data_store_class);
             case "telegraf_kubernetes_daemonset":
-                return new ParserTelegrafK8SDaemonset(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SDaemonset(data_store_class);
             case "telegraf_kubernetes_deployment":
-                return new ParserTelegrafK8SDeployment(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SDeployment(data_store_class);
             case "telegraf_kubernetes_service":
-                return new ParserTelegrafK8SService(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SService(data_store_class);
             case "telegraf_kubernetes_statefulset":
-                return new ParserTelegrafK8SStatefulset(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SStatefulset(data_store_class);
             case "telegraf_kubernetes_pod_container":
-                return new ParserTelegrafK8SPodContainer(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SPodContainer(data_store_class);
             case "telegraf_kubernetes_pod_network":
-                return new ParserTelegrafK8SPodNetwork(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SPodNetwork(data_store_class);
             case "telegraf_kubernetes_pod_volume":
-                return new ParserTelegrafK8SPodVolume(store_record_es, store_record_prometheus);
+                return new ParserTelegrafK8SPodVolume(data_store_class);
             //case "telegraf_kubernetes_system_container":
             //    return new ParserTelegrafK8SSystemContainer();
             case "telegraf_mem":
-                return new ParserTelegrafMem(store_record_es, store_record_prometheus);
+                return new ParserTelegrafMem(data_store_class);
             case "telegraf_net":
-                return new ParserTelegrafNet(store_record_es, store_record_prometheus);
+                return new ParserTelegrafNet(data_store_class);
             //case "telegraf_processes":
-            //    return new ParserTelegrafProcesses(store_record_es, store_record_prometheus);
+            //    return new ParserTelegrafProcesses(data_store_class);
             case "telegraf_swap":
-                return new ParserTelegrafSwap(store_record_es, store_record_prometheus);
+                return new ParserTelegrafSwap(data_store_class);
             case "telegraf_system":
-                return new ParserTelegrafSystem(store_record_es, store_record_prometheus);
+                return new ParserTelegrafSystem(data_store_class);
             case "telegraf_temp":
-                return new ParserTelegrafTemp(store_record_es, store_record_prometheus);
+                return new ParserTelegrafTemp(data_store_class);
             case "telegraf_powerstat_package":
-                return new ParserTelegrafPower(store_record_es, store_record_prometheus);
+                return new ParserTelegrafPower(data_store_class);
             case "tcp-latency":
-                return new ParserLatencyTCP(store_record_es, store_record_prometheus);
+                return new ParserLatencyTCP(data_store_class);
             default:
                 logger.info("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
                 break;

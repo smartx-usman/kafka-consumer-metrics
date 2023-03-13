@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StoreRecordPrometheus implements storable {
+public class StoreRecordPrometheus implements Storable {
     private static final Logger logger = LogManager.getLogger(StoreRecordPrometheus.class);
     private final CollectorRegistry registry = new CollectorRegistry();
     private final PushGateway push_gateway;
@@ -20,10 +20,6 @@ public class StoreRecordPrometheus implements storable {
     }
 
     @Override
-    public void store_record(String metric, Map<String, String> record) {
-        //TODO: Add support for multiple metrics
-    }
-
     public void store_record(String plugin, String metric, Map<String, String> record, List<String> labelKeys, List<String> labelValues, String measurement) {
         String jobName = "telegraf-" + plugin + "-metrics";
         Map<String, String> grouping_key = new HashMap<String, String>();

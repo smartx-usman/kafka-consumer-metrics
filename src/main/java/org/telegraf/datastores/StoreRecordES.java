@@ -24,9 +24,10 @@ import org.elasticsearch.client.RestClient;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
-public class StoreRecordES implements storable {
+public class StoreRecordES implements Storable {
     private static final Logger logger = LogManager.getLogger(StoreRecordES.class);
     ElasticsearchClient client;
     IndexRequest<JsonData> req;
@@ -115,7 +116,7 @@ public class StoreRecordES implements storable {
 
     @SuppressWarnings({})
     @Override
-    public void store_record(String ES_Index, Map<String, String> record) {
+    public void store_record(String ES_Index, String metric, Map<String, String> record, List<String> labelKeys, List<String> labelValues, String measurement) {
         try {
             ExistsRequest checkIndex = ExistsRequest.of(b -> b
                     .index(ES_Index));

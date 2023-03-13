@@ -44,7 +44,7 @@ public class ParserTelegrafSystem implements parsable {
     @Override
     public void parse_record(ConsumerRecord<String, String> record, String es_index) {
         try {
-            logger.warn("Record: " + record.value());
+            //logger.warn("Record: " + record.value());
 
             String[] record_split = record.value().split(" ");
 

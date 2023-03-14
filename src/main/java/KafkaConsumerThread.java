@@ -6,6 +6,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.telegraf.datastores.Storable;
+import org.telegraf.datastores.StoreRecordES;
+import org.telegraf.datastores.StoreRecordFile;
+import org.telegraf.datastores.StoreRecordPrometheus;
 import org.telegraf.parsers.*;
 
 import java.text.SimpleDateFormat;
@@ -18,13 +21,12 @@ public class KafkaConsumerThread extends Thread {
     private static final Logger logger = (Logger) LogManager.getLogger(KafkaConsumerThread.class);
     private final String KAFKA_BOOTSTRAP_SERVERS;
     private final String KAFKA_TOPIC;
-    private final Storable data_store_class;
+    private Storable data_store_class = null;
     private final String ES_INDEX;
 
-    public KafkaConsumerThread(String kafka_brokers, String kafka_topic, Storable data_store) {
+    public KafkaConsumerThread(String kafka_brokers, String kafka_topic) {
         KAFKA_BOOTSTRAP_SERVERS = kafka_brokers;
         KAFKA_TOPIC = kafka_topic;
-        data_store_class = data_store;
         ES_INDEX = KAFKA_TOPIC + "_index";
         logger.info("Kafka Topic --> " + KAFKA_TOPIC);
     }
@@ -32,45 +34,45 @@ public class KafkaConsumerThread extends Thread {
     public parsable get_parser_class() {
         switch (KAFKA_TOPIC) {
             case "telegraf_cpu":
-                return new ParserTelegrafCPU(data_store_class);
+                return new ParserTelegrafCPU();
             case "telegraf_disk":
-                return new ParserTelegrafDisk(data_store_class);
+                return new ParserTelegrafDisk();
             case "telegraf_diskio":
-                return new ParserTelegrafDiskio(data_store_class);
+                return new ParserTelegrafDiskio();
             case "telegraf_docker":
-                return new ParserTelegrafDocker(data_store_class);
+                return new ParserTelegrafDocker();
             case "telegraf_kubernetes_daemonset":
-                return new ParserTelegrafK8SDaemonset(data_store_class);
+                return new ParserTelegrafK8SDaemonset();
             case "telegraf_kubernetes_deployment":
-                return new ParserTelegrafK8SDeployment(data_store_class);
+                return new ParserTelegrafK8SDeployment();
             case "telegraf_kubernetes_service":
-                return new ParserTelegrafK8SService(data_store_class);
+                return new ParserTelegrafK8SService();
             case "telegraf_kubernetes_statefulset":
-                return new ParserTelegrafK8SStatefulset(data_store_class);
+                return new ParserTelegrafK8SStatefulset();
             case "telegraf_kubernetes_pod_container":
-                return new ParserTelegrafK8SPodContainer(data_store_class);
+                return new ParserTelegrafK8SPodContainer();
             case "telegraf_kubernetes_pod_network":
-                return new ParserTelegrafK8SPodNetwork(data_store_class);
+                return new ParserTelegrafK8SPodNetwork();
             case "telegraf_kubernetes_pod_volume":
-                return new ParserTelegrafK8SPodVolume(data_store_class);
+                return new ParserTelegrafK8SPodVolume();
             //case "telegraf_kubernetes_system_container":
             //    return new ParserTelegrafK8SSystemContainer();
             case "telegraf_mem":
-                return new ParserTelegrafMem(data_store_class);
+                return new ParserTelegrafMem();
             case "telegraf_net":
-                return new ParserTelegrafNet(data_store_class);
+                return new ParserTelegrafNet();
             //case "telegraf_processes":
-            //    return new ParserTelegrafProcesses(data_store_class);
+            //    return new ParserTelegrafProcesses();
             case "telegraf_swap":
-                return new ParserTelegrafSwap(data_store_class);
+                return new ParserTelegrafSwap();
             case "telegraf_system":
-                return new ParserTelegrafSystem(data_store_class);
+                return new ParserTelegrafSystem();
             case "telegraf_temp":
-                return new ParserTelegrafTemp(data_store_class);
+                return new ParserTelegrafTemp();
             case "telegraf_powerstat_package":
-                return new ParserTelegrafPower(data_store_class);
+                return new ParserTelegrafPower();
             case "tcp-latency":
-                return new ParserLatencyTCP(data_store_class);
+                return new ParserLatencyTCP();
             default:
                 logger.info("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
                 break;
@@ -82,6 +84,27 @@ public class KafkaConsumerThread extends Thread {
         try {
             // Displaying the thread that is running
             logger.info("Thread " + Thread.currentThread().getId() + " is running");
+
+            String data_store = System.getenv("DATA_STORE");
+            String es_host = System.getenv("ES_HOSTNAME");
+            String es_port = System.getenv("ES_PORT");
+            String retention_days = System.getenv("ES_INDEX_RETENTION_DAYS");
+            String prometheus_pushgateway = System.getenv("PROMETHEUS_PUSHGATEWAY");
+
+            //Date formatting
+            String previous_date = "", current_date = "", pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+            if (data_store.equals("elasticsearch")) {
+                data_store_class = new StoreRecordES(es_host, Integer.parseInt(es_port), retention_days);
+            } else if (data_store.equals("prometheus")) {
+                data_store_class = new StoreRecordPrometheus(prometheus_pushgateway);
+            } else if (data_store.equals("file")) {
+                data_store_class = new StoreRecordFile(ES_INDEX + "_" + current_date);
+            } else {
+                logger.error("Invalid data store specified.");
+                System.exit(0);
+            }
 
             //Creating consumer properties
             Properties properties = new Properties();
@@ -97,16 +120,18 @@ public class KafkaConsumerThread extends Thread {
             //Subscribing
             consumer.subscribe(Collections.singleton(this.KAFKA_TOPIC));
 
-            //Date formatting
-            String pattern = "yyyy-MM-dd";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
             //polling
             while (ExecuteThread) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                current_date = simpleDateFormat.format(new Date());
+
+                if (!previous_date.equals(current_date)) {
+                    data_store_class.createRecordFile(ES_INDEX + "_" + current_date);
+                    previous_date = current_date;
+                }
 
                 for (ConsumerRecord<String, String> record : records) {
-                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(new Date()));
+                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(new Date()), data_store_class);
                 }
             }
         } catch (Exception e) {

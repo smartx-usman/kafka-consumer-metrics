@@ -1,19 +1,10 @@
 package org.telegraf.parsers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SequenceWriter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.Storable;
-import org.telegraf.datastores.StoreRecordES;
-import org.telegraf.datastores.StoreRecordFile;
-import org.telegraf.datastores.StoreRecordPrometheus;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,16 +12,9 @@ import java.util.Map;
 
 public class ParserTelegrafK8SPodContainer implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafK8SPodContainer.class);
-    private final Storable data_store_class;
-    private StoreRecordFile store_record_file;
-
-    public ParserTelegrafK8SPodContainer(Storable data_store) {
-        data_store_class = data_store;
-        store_record_file = new StoreRecordFile("kubernetes_pod_container");
-    }
 
     @Override
-    public void parse_record(ConsumerRecord<String, String> record, String es_index) {
+    public void parse_record(ConsumerRecord<String, String> record, String es_index, Storable data_store_class) {
         try {
             String[] record_split = record.value().split(" ");
 
@@ -67,7 +51,6 @@ public class ParserTelegrafK8SPodContainer implements parsable {
                 jsonMap.put(label_and_value[0], label_and_value[1]);
             }
 
-            store_record_file.store_record(measurement_plugin_labels[0], null, jsonMap, null, null, null);
             data_store_class.store_record(es_index, null, jsonMap, null, null, null);
         } catch (Exception e) {
             e.printStackTrace();

@@ -16,7 +16,13 @@ public class StoreRecordPrometheus implements Storable {
     private final PushGateway push_gateway;
 
     public StoreRecordPrometheus(String push_gateway) {
+        logger.info("Prometheus storage initialized.");
         this.push_gateway = new PushGateway(push_gateway);
+    }
+
+    @Override
+    public void createRecordFile(String filename) {
+        // Not used
     }
 
     @Override

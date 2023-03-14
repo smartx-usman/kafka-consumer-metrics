@@ -40,6 +40,7 @@ public class StoreRecordES implements Storable {
         es_port = port;
         es_index_retention_days = retention_days;
         this.set_client();
+        logger.info("Elasticsearch storage initialized.");
     }
 
     public void set_client() {
@@ -112,6 +113,11 @@ public class StoreRecordES implements Storable {
     public void close_client() {
         //client. close();
         //System.out.println("Close connection.");
+    }
+
+    @Override
+    public void createRecordFile(String filename) {
+        // TODO Auto-generated method stub
     }
 
     @SuppressWarnings({})

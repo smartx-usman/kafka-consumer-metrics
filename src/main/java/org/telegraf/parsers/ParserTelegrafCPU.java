@@ -1,12 +1,9 @@
 package org.telegraf.parsers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SequenceWriter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegraf.datastores.Storable;
-import org.telegraf.datastores.StoreRecordFile;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -18,16 +15,8 @@ import java.util.Map;
 public class ParserTelegrafCPU implements parsable {
     private static final Logger logger = LogManager.getLogger(ParserTelegrafCPU.class);
 
-    private final Storable data_store_class;
-    private StoreRecordFile store_record_file;
-
-    public ParserTelegrafCPU(Storable data_store) {
-        data_store_class = data_store;
-        store_record_file = new StoreRecordFile("cpu_usage");
-    }
-
     @Override
-    public void parse_record(ConsumerRecord<String, String> record, String es_index) {
+    public void parse_record(ConsumerRecord<String, String> record, String es_index, Storable data_store_class) {
         try {
             String[] record_split = record.value().split(" ");
 
@@ -60,7 +49,6 @@ public class ParserTelegrafCPU implements parsable {
                 //data_store_class.store_record(measurement_plugin_labels[0], label_and_value[0], jsonMap, labelKeys, labelValues, label_and_value[1]);
             }
 
-            store_record_file.store_record(measurement_plugin_labels[0], null, jsonMap, null, null, null);
             data_store_class.store_record(es_index, null, jsonMap, null, null, null);
         } catch (Exception e) {
             logger.error("Error in parsing record.", e);

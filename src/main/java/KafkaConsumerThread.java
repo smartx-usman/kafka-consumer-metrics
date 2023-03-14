@@ -92,18 +92,22 @@ public class KafkaConsumerThread extends Thread {
             String prometheus_pushgateway = System.getenv("PROMETHEUS_PUSHGATEWAY");
 
             //Date formatting
-            String previous_date = "", current_date = "", pattern = "yyyy-MM-dd";
+            String previous_date = "", current_date, pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
-            if (data_store.equals("elasticsearch")) {
-                data_store_class = new StoreRecordES(es_host, Integer.parseInt(es_port), retention_days);
-            } else if (data_store.equals("prometheus")) {
-                data_store_class = new StoreRecordPrometheus(prometheus_pushgateway);
-            } else if (data_store.equals("file")) {
-                data_store_class = new StoreRecordFile(ES_INDEX + "_" + current_date);
-            } else {
-                logger.error("Invalid data store specified.");
-                System.exit(0);
+            switch (data_store) {
+                case "elasticsearch":
+                    data_store_class = new StoreRecordES(es_host, Integer.parseInt(es_port), retention_days);
+                    break;
+                case "prometheus":
+                    data_store_class = new StoreRecordPrometheus(prometheus_pushgateway);
+                    break;
+                case "file":
+                    data_store_class = new StoreRecordFile(ES_INDEX + "_" + simpleDateFormat.format(new Date()));
+                    break;
+                default:
+                    logger.error("Invalid data store specified.");
+                    System.exit(0);
             }
 
             //Creating consumer properties

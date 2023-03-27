@@ -14,7 +14,7 @@ import org.telegraf.parsers.*;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.Properties;
 
 public class KafkaConsumerThread extends Thread {
@@ -92,8 +92,9 @@ public class KafkaConsumerThread extends Thread {
             String prometheus_pushgateway = System.getenv("PROMETHEUS_PUSHGATEWAY");
 
             //Date formatting
-            String previous_date = "", current_date, pattern = "yyyy-MM-dd";
+            String previous_date = "", current_date, pattern = "yyyy-MM-dd-HH";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+            Calendar calendar = Calendar.getInstance();
 
             switch (data_store) {
                 case "elasticsearch":
@@ -103,7 +104,7 @@ public class KafkaConsumerThread extends Thread {
                     data_store_class = new StoreRecordPrometheus(prometheus_pushgateway);
                     break;
                 case "file":
-                    data_store_class = new StoreRecordFile(ES_INDEX + "_" + simpleDateFormat.format(new Date()));
+                    data_store_class = new StoreRecordFile(ES_INDEX + "_" + simpleDateFormat.format(calendar.getTime()));
                     break;
                 default:
                     logger.error("Invalid data store specified.");
@@ -127,7 +128,7 @@ public class KafkaConsumerThread extends Thread {
             //polling
             while (ExecuteThread) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-                current_date = simpleDateFormat.format(new Date());
+                current_date = simpleDateFormat.format(calendar.getTime());
 
                 if (!previous_date.equals(current_date)) {
                     data_store_class.createRecordFile(ES_INDEX + "_" + current_date);
@@ -135,7 +136,7 @@ public class KafkaConsumerThread extends Thread {
                 }
 
                 for (ConsumerRecord<String, String> record : records) {
-                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(new Date()), data_store_class);
+                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(calendar.getTime()), data_store_class);
                 }
             }
         } catch (Exception e) {

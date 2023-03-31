@@ -14,7 +14,7 @@ import org.telegraf.parsers.*;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 
 public class KafkaConsumerThread extends Thread {
@@ -27,7 +27,7 @@ public class KafkaConsumerThread extends Thread {
     public KafkaConsumerThread(String kafka_brokers, String kafka_topic) {
         KAFKA_BOOTSTRAP_SERVERS = kafka_brokers;
         KAFKA_TOPIC = kafka_topic;
-        ES_INDEX = KAFKA_TOPIC + "_index";
+        ES_INDEX = KAFKA_TOPIC;
         logger.info("Kafka Topic --> " + KAFKA_TOPIC);
     }
 
@@ -39,8 +39,8 @@ public class KafkaConsumerThread extends Thread {
                 return new ParserTelegrafDisk();
             case "telegraf_diskio":
                 return new ParserTelegrafDiskio();
-            case "telegraf_docker":
-                return new ParserTelegrafDocker();
+            //case "telegraf_docker":
+            //    return new ParserTelegrafDocker();
             case "telegraf_kubernetes_daemonset":
                 return new ParserTelegrafK8SDaemonset();
             case "telegraf_kubernetes_deployment":
@@ -63,18 +63,18 @@ public class KafkaConsumerThread extends Thread {
                 return new ParserTelegrafNet();
             //case "telegraf_processes":
             //    return new ParserTelegrafProcesses();
-            case "telegraf_swap":
-                return new ParserTelegrafSwap();
+            //case "telegraf_swap":
+            //    return new ParserTelegrafSwap();
             case "telegraf_system":
                 return new ParserTelegrafSystem();
             case "telegraf_temp":
                 return new ParserTelegrafTemp();
             case "telegraf_powerstat_package":
                 return new ParserTelegrafPower();
-            case "tcp-latency":
-                return new ParserLatencyTCP();
+            //case "tcp-latency":
+            //    return new ParserLatencyTCP();
             default:
-                logger.info("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
+                logger.warn("No parser exists for " + KAFKA_TOPIC + " topic. Exiting...");
                 break;
         }
         return null;
@@ -94,7 +94,6 @@ public class KafkaConsumerThread extends Thread {
             //Date formatting
             String previous_date = "", current_date, pattern = "yyyy-MM-dd-HH";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-            Calendar calendar = Calendar.getInstance();
 
             switch (data_store) {
                 case "elasticsearch":
@@ -104,7 +103,7 @@ public class KafkaConsumerThread extends Thread {
                     data_store_class = new StoreRecordPrometheus(prometheus_pushgateway);
                     break;
                 case "file":
-                    data_store_class = new StoreRecordFile(ES_INDEX + "_" + simpleDateFormat.format(calendar.getTime()));
+                    data_store_class = new StoreRecordFile(ES_INDEX + "_" + simpleDateFormat.format(new Date()));
                     break;
                 default:
                     logger.error("Invalid data store specified.");
@@ -128,7 +127,7 @@ public class KafkaConsumerThread extends Thread {
             //polling
             while (ExecuteThread) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-                current_date = simpleDateFormat.format(calendar.getTime());
+                current_date = simpleDateFormat.format(new Date());
 
                 if (!previous_date.equals(current_date)) {
                     data_store_class.createRecordFile(ES_INDEX + "_" + current_date);
@@ -136,7 +135,7 @@ public class KafkaConsumerThread extends Thread {
                 }
 
                 for (ConsumerRecord<String, String> record : records) {
-                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(calendar.getTime()), data_store_class);
+                    parser_class.parse_record(record, ES_INDEX + "_" + simpleDateFormat.format(new Date()), data_store_class);
                 }
             }
         } catch (Exception e) {
